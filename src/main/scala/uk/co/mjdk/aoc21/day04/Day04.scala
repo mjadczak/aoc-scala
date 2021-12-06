@@ -2,8 +2,6 @@ package uk.co.mjdk.aoc21.day04
 
 import uk.co.mjdk.aoc21.inputLines
 
-object Day04 {}
-
 // We store a lookup from number -> row and column, and count of numbers called in each row/col
 // 0-indexed rows and cols
 // Assume numbers cannot repeat in one board
@@ -52,46 +50,47 @@ object BingoBoard {
   }
 }
 
+def parseNumsAndBoards: (Vector[Int], List[BingoBoard]) = {
+  val iter = inputLines(4)
+  val drawnNumbers = iter.next().split(',').iterator.map(_.toInt).toVector
+  val boards = iter
+    .grouped(6)
+    .map { lines =>
+      lines.drop(1).map(_.trim.split("\\s+").toSeq.map(_.trim.toInt))
+    }
+    .map(BingoBoard.fromNumbers)
+    .toList
+
+  (drawnNumbers, boards)
+}
+
+def iterateNumbers(
+    drawnNumbers: Vector[Int],
+    initialBoards: List[BingoBoard]
+): Iterator[(List[Int], List[BingoBoard])] = {
+  drawnNumbers.iterator
+    .scanLeft((List.empty[Int], initialBoards)) { case ((_, boards), nextNum) =>
+      boards.partitionMap { board =>
+        board.markNumber(nextNum) match {
+          case (false, newBoard) => Right(newBoard)
+          case (true, newBoard)  =>
+            // we won!
+            val score = newBoard.unmarkedNumbers.sum * nextNum
+            Left(score)
+        }
+      }
+    }
+    .takeWhile(_._2.nonEmpty)
+}
+
 object Part1 {
   def main(args: Array[String]): Unit = {
-    val iter = inputLines(4)
-    val drawnNumbers = iter.next().split(',').iterator.map(_.toInt).toVector
-    val boards = iter
-      .grouped(6)
-      .map { lines =>
-        lines.drop(1).map(_.trim.split("\\s+").toSeq.map(_.trim.toInt))
-      }
-      .map(BingoBoard.fromNumbers)
-      .toList
+    val (drawnNumbers, boards) = parseNumsAndBoards
 
     // state: boards, optional final score from winning board
-    val winningScore = drawnNumbers
-      .scanLeft((boards, Option.empty[Int])) {
-        case (s @ (_, Some(score)), _) =>
-          s
-        case ((boards, None), nextNum) =>
-          val (winningScores, newBoards) = boards.partitionMap { board =>
-            board.markNumber(nextNum) match {
-              case (false, newBoard) => Right(newBoard)
-              case (true, newBoard)  =>
-                // we won!
-                val score = newBoard.unmarkedNumbers.sum * nextNum
-                Left(score)
-            }
-          }
-
-          if (winningScores.length > 1) {
-            throw new IllegalStateException("More than one winning board")
-          }
-
-          if (winningScores.nonEmpty) {
-            (newBoards, Some(winningScores.head))
-          } else {
-            (newBoards, None)
-          }
-      }
-      .find(_._2.nonEmpty)
-      .flatMap(_._2)
+    val winningScore = iterateNumbers(drawnNumbers, boards)
+      .find(_._1.nonEmpty)
+      .map(_._1.head)
       .get
 
     println(winningScore)

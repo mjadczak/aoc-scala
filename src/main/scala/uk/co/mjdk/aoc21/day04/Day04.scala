@@ -80,7 +80,6 @@ def iterateNumbers(
         }
       }
     }
-    .takeWhile(_._2.nonEmpty)
 }
 
 object Part1 {
@@ -89,10 +88,27 @@ object Part1 {
 
     // state: boards, optional final score from winning board
     val winningScore = iterateNumbers(drawnNumbers, boards)
-      .find(_._1.nonEmpty)
+      .find(_._1.nonEmpty) // find first occurrence of some scores
       .map(_._1.head)
       .get
 
     println(winningScore)
+  }
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val (drawnNumbers, boards) = parseNumsAndBoards
+
+    val lastScoreToWin = iterateNumbers(drawnNumbers, boards)
+      .map(_._1)
+      .filter(_.nonEmpty)
+      // No convenient .last on an iterator, even when we know it's finite
+      // Could have written one, but this is fine
+      .toVector
+      .last
+      .head
+
+    println(lastScoreToWin)
   }
 }

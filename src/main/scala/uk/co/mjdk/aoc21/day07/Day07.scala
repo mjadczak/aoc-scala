@@ -25,8 +25,8 @@ object Part1 {
 
 object Part2 {
   def main(args: Array[String]): Unit = {
-    // Note the sum of the first n numbers is n(n+1)/2, and write f(x) = the total cost of point x
-    // Then set f'(x) = 0 and solve. We get the mean + a correction factor which we can calculate iteratively:
+    // Note the sum of the first n numbers is n(n+1)/2, and write f(t) = the total cost of point t
+    // Then set f'(t) = 0 and solve. We get the mean + a correction factor which we can calculate iteratively:
     // -(1/2)*mean(sign(x-t))
 
     val crabs = crabPositions

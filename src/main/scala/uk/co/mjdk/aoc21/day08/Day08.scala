@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day08
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc21._
 import scala.math.pow
 
 // 0: abc efg =6
@@ -31,15 +31,6 @@ object Part1 {
       .count(known)
 
     println(count)
-  }
-}
-
-extension [T](s: Iterable[T]) {
-  def only: T = {
-    if (s.size > 1) {
-      throw new IllegalStateException(s"Expected single element in set $s")
-    }
-    s.head
   }
 }
 

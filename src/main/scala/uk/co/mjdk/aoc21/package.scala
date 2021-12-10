@@ -11,4 +11,13 @@ package object aoc21 {
     Source
       .fromResource(s"uk/co/mjdk/aoc21/input${dayNum.formatted("%02d")}.txt")
       .getLines()
+
+  extension [T](s: Iterable[T]) {
+    def only: T = {
+      if (s.size > 1) {
+        throw new IllegalStateException(s"Expected single element in set $s")
+      }
+      s.head
+    }
+  }
 }

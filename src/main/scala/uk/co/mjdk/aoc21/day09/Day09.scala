@@ -14,7 +14,7 @@ case class Pos(row: Int, col: Int) {
   }
 }
 
-def parseMap: Map[Pos, Int] =
+def parseGrid: Map[Pos, Int] =
   inputLines(9).zipWithIndex
     .foldLeft(Map.empty[Pos, Int]) { case (map, (line, row)) =>
       line.iterator.zipWithIndex.foldLeft(map) { case (map, (digit, col)) =>
@@ -22,18 +22,18 @@ def parseMap: Map[Pos, Int] =
       }
     }
 
+def iterLowPoints(grid: Map[Pos, Int]): Iterator[(Pos, Int)] = grid.iterator
+  .filter { case (pos, height) =>
+    pos.adjacentPositions.iterator.flatMap(grid.get).forall(_ > height)
+  }
+
 object Part1 {
   def main(args: Array[String]): Unit = {
-    val map = parseMap
+    val grid = parseGrid
 
-    val res = map.iterator
-      .filter { case (pos, height) =>
-        pos.adjacentPositions.iterator.flatMap(map.get).forall(_ > height)
-      }
-      .map { case (_, height) =>
-        height + 1
-      }
-      .sum
+    val res = iterLowPoints(grid).map { case (_, height) =>
+      height + 1
+    }.sum
 
     println(res)
   }

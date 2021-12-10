@@ -34,7 +34,7 @@ enum ParseResult {
 }
 
 @tailrec
-def findIllegal(
+def parseLine(
     input: List[Char],
     stack: List[BracketType] = List.empty
 ): ParseResult = input match {
@@ -43,11 +43,11 @@ def findIllegal(
   case c :: rest =>
     val b = Bracket.parse(c)
     b.direction match {
-      case BracketDirection.Opening => findIllegal(rest, b.typ :: stack)
+      case BracketDirection.Opening => parseLine(rest, b.typ :: stack)
       case BracketDirection.Closing =>
         stack match {
           case b.typ :: stackRest =>
-            findIllegal(rest, stackRest)
+            parseLine(rest, stackRest)
           case _ =>
             ParseResult.Illegal(b.typ)
         }
@@ -61,16 +61,41 @@ def illegalScore(typ: BracketType): Int = typ match {
   case BracketType.Angle   => 25137
 }
 
+def completionScore(typ: BracketType): Long = typ match {
+  case BracketType.Rounded => 1
+  case BracketType.Square  => 2
+  case BracketType.Brace   => 3
+  case BracketType.Angle   => 4
+}
+
 object Part1 {
   def main(args: Array[String]): Unit = {
     val score = inputLines(10)
       .map(_.toList)
-      .map(findIllegal(_))
+      .map(parseLine(_))
       .collect { case ParseResult.Illegal(typ) =>
         illegalScore(typ)
       }
       .sum
 
     println(score)
+  }
+}
+
+object Part2 {
+  // Note we don't need to actually come up with the completion - just the score for it
+  def main(args: Array[String]): Unit = {
+    val scores = inputLines(10)
+      .map(_.toList)
+      .map(parseLine(_))
+      .collect { case ParseResult.Incomplete(stack) =>
+        stack.foldLeft(0L) { case (score, typ) =>
+          score * 5 + completionScore(typ)
+        }
+      }
+      .toVector
+      .sorted
+
+    println(scores(scores.length / 2))
   }
 }

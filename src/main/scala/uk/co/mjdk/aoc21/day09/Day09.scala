@@ -7,10 +7,9 @@ import scala.util.chaining._
 // One could have an argument about using two Vectors rather than a map, but this is more convenient in this case
 case class Pos(row: Int, col: Int) {
   def adjacentPositions: Set[Pos] = {
-    def iter = Iterator.range(-1, 2)
-    iter
+    (-1 to 1)
       .map(r => copy(row = row + r))
-      .concat(iter.map(c => copy(col = col + c)))
+      .concat((-1 to 1).map(c => copy(col = col + c)))
       .toSet
       .excl(this)
   }

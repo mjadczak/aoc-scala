@@ -100,3 +100,17 @@ object Part1 {
     println(totalFlashes)
   }
 }
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val grid = parseGrid
+    val (_, stepNum) = Iterator
+      .unfold(grid)(grid => Some(simulateStep(grid)))
+      .zipWithIndex
+      .find(_._1 == grid.size)
+      .get
+
+    // our steps are 0-based
+    println(stepNum + 1)
+  }
+}

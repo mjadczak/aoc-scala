@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day02
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 enum Command {
   case Forward(x: Int)
@@ -8,7 +8,7 @@ enum Command {
   case Up(depth: Int)
 }
 
-def commands: Iterator[Command] = inputLines(2).map { str =>
+def commands: Iterator[Command] = inputLines(21)(2).map { str =>
   val parts = str.split(' ')
   assert(parts.length == 2)
   val num = parts(1).toInt

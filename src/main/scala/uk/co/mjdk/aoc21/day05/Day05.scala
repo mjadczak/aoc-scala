@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day05
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 import math.Ordered.orderingToOrdered
 
@@ -23,7 +23,7 @@ case class Line(start: Pos, end: Pos) {
   }
 }
 
-def parseLines: Iterator[Line] = inputLines(5)
+def parseLines: Iterator[Line] = inputLines(21)(5)
   .map(_.split(" -> ").map(_.split(',').map(_.toInt)))
   .map { case Array(Array(x1, y1), Array(x2, y2)) =>
     Line(Pos(x1, y1), Pos(x2, y2))

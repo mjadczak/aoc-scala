@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day08
 
-import uk.co.mjdk.aoc21._
+import uk.co.mjdk.aoc._
 import scala.math.pow
 
 // 0: abc efg =6
@@ -25,7 +25,7 @@ object Part1 {
   def main(args: Array[String]): Unit = {
     val known = Set(2, 3, 4, 7)
 
-    val count = inputLines(8)
+    val count = inputLines(21)(8)
       .flatMap(_.split('|')(1).trim.split(' ').iterator)
       .map(_.length)
       .count(known)
@@ -45,7 +45,7 @@ extension (n: Int) {
 object Part2 {
   def main(args: Array[String]): Unit = {
     val sum =
-      inputLines(8).map { line =>
+      inputLines(21)(8).map { line =>
         val Array(ins, outs) =
           line.split('|').map(_.trim.split(' ').map(_.toCharArray.toSet))
         val inSet = ins.toSet.groupBy(_.size)

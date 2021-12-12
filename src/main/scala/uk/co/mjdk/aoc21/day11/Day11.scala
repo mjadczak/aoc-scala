@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day11
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
@@ -16,7 +16,7 @@ case class Pos(row: Int, col: Int) {
 }
 
 def parseGrid: Map[Pos, Int] =
-  inputLines(11).zipWithIndex
+  inputLines(21)(11).zipWithIndex
     .foldLeft(Map.empty[Pos, Int]) { case (grid, (line, row)) =>
       line.zipWithIndex.foldLeft(grid) { case (grid, (char, col)) =>
         grid + (Pos(row, col) -> char.asDigit)

@@ -1,9 +1,9 @@
 package uk.co.mjdk.aoc21.day07
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 def crabPositions: Vector[Int] =
-  inputLines(7).next().split(',').iterator.map(_.toInt).toVector
+  inputLines(21)(7).next().split(',').iterator.map(_.toInt).toVector
 
 object Part1 {
   def main(args: Array[String]): Unit = {

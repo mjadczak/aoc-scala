@@ -1,7 +1,6 @@
 package uk.co.mjdk.aoc21.day01
 
-import uk.co.mjdk.aoc21.day01.Part1.getClass
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 import scala.io.Source
 import scala.util.Using
@@ -9,7 +8,7 @@ import scala.util.Using
 object Part1 {
   def main(args: Array[String]): Unit = {
     println(
-      inputLines(1)
+      inputLines(21)(1)
         .map(_.toInt)
         .sliding(2)
         .map {
@@ -25,7 +24,7 @@ object Part1 {
 object Part2 {
   def main(args: Array[String]): Unit = {
     println(
-      inputLines(1)
+      inputLines(21)(1)
         .map(_.toInt)
         .sliding(3)
         .map(_.sum)

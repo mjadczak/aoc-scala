@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day10
 
-import uk.co.mjdk.aoc21.*
+import uk.co.mjdk.aoc.*
 
 import scala.annotation.tailrec
 
@@ -70,7 +70,7 @@ def completionScore(typ: BracketType): Long = typ match {
 
 object Part1 {
   def main(args: Array[String]): Unit = {
-    val score = inputLines(10)
+    val score = inputLines(21)(10)
       .map(_.toList)
       .map(parseLine(_))
       .collect { case ParseResult.Illegal(typ) =>
@@ -85,7 +85,7 @@ object Part1 {
 object Part2 {
   // Note we don't need to actually come up with the completion - just the score for it
   def main(args: Array[String]): Unit = {
-    val scores = inputLines(10)
+    val scores = inputLines(21)(10)
       .map(_.toList)
       .map(parseLine(_))
       .collect { case ParseResult.Incomplete(stack) =>

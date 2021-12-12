@@ -1,11 +1,11 @@
 package uk.co.mjdk.aoc21.day06
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 def fishAfterNDays(n: Int): Long = {
   // Represent the number of lanternfish with each timer value by using a map
   val initialState =
-    inputLines(6)
+    inputLines(21)(6)
       .next()
       .split(',')
       .toVector

@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day09
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 import scala.util.chaining._
 
@@ -16,7 +16,7 @@ case class Pos(row: Int, col: Int) {
 }
 
 def parseGrid: Map[Pos, Int] =
-  inputLines(9).zipWithIndex
+  inputLines(21)(9).zipWithIndex
     .foldLeft(Map.empty[Pos, Int]) { case (map, (line, row)) =>
       line.iterator.zipWithIndex.foldLeft(map) { case (map, (digit, col)) =>
         map + (Pos(row, col) -> digit.asDigit)

@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day12
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
@@ -32,7 +32,7 @@ def parseGraph: Map[Cave, Set[Cave]] = {
     case Some(s) => Some(s + other)
   }
 
-  inputLines(12)
+  inputLines(21)(12)
     .map { line =>
       val Array(leftName, rightName) = line.split('-')
       (Cave.parse(leftName), Cave.parse(rightName))

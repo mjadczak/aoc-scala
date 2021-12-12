@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day03
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 import scala.util.chaining._
 
@@ -10,7 +10,7 @@ import scala.util.chaining._
 object Part1 {
   def main(args: Array[String]): Unit = {
     // state: a count of 1 bits in each position starting from LSB, and a count of lines
-    val (hist, count) = inputLines(3).foldLeft((Vector.empty[Int], 0)) {
+    val (hist, count) = inputLines(21)(3).foldLeft((Vector.empty[Int], 0)) {
       case ((hist, count), numStr) =>
         val newHist = numStr.reverseIterator.zipWithIndex.foldLeft(hist) {
           case (hist, (c, i)) =>
@@ -97,7 +97,7 @@ object Part2 {
 
   def main(args: Array[String]): Unit = {
     // chuck our pretty streaming out the window
-    val numbers = inputLines(3).toVector
+    val numbers = inputLines(21)(3).toVector
 
     // Arguably, at this point it might be more efficient to parse all of the numbers and access the bits using bitwise
     // operations. I couldn't be bothered though.

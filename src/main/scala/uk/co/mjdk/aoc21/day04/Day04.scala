@@ -1,6 +1,6 @@
 package uk.co.mjdk.aoc21.day04
 
-import uk.co.mjdk.aoc21.inputLines
+import uk.co.mjdk.aoc.inputLines
 
 // We store a lookup from number -> row and column, and count of numbers called in each row/col
 // 0-indexed rows and cols
@@ -51,7 +51,7 @@ object BingoBoard {
 }
 
 def parseNumsAndBoards: (Vector[Int], List[BingoBoard]) = {
-  val iter = inputLines(4)
+  val iter = inputLines(21)(4)
   val drawnNumbers = iter.next().split(',').iterator.map(_.toInt).toVector
   val boards = iter
     .grouped(6)

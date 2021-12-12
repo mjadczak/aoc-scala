@@ -52,3 +52,56 @@ object Part1 {
       .pipe(println)
   }
 }
+
+// We need a window of three letters - previous, current, and next. We handle the overlapping repeat case by being
+// careful about when we admit the seen combination to the search set
+// Note we can also exit early here!
+@tailrec
+def isNice2(
+    letters: List[Char],
+    maybeLastLetter: Option[Char] = None,
+    seenPairs: Set[Vector[Char]] = Set.empty,
+    hasRepeatedPair: Boolean = false,
+    hasWindowedLetter: Boolean = false
+): Boolean = {
+  if (hasRepeatedPair && hasWindowedLetter) {
+    true
+  } else {
+    letters match {
+      case Nil => false // would have returned above if satisfied
+      case letter :: rest =>
+        val maybeNextLetter = rest.headOption
+        // check for repeated pair
+        val foundRepeatedPair = maybeNextLetter match {
+          case None => false
+          case Some(nextLetter) =>
+            seenPairs.contains(Vector(letter, nextLetter))
+        }
+        // check for windowed letter
+        val foundWindowedLetter = (maybeLastLetter, maybeNextLetter) match {
+          case (Some(lastLetter), Some(nextLetter)) => lastLetter == nextLetter
+          case _                                    => false
+        }
+        // save the just-seen pair for later
+        val newPair =
+          maybeLastLetter.map(lastLetter => Vector(lastLetter, letter))
+
+        isNice2(
+          rest,
+          Some(letter),
+          seenPairs ++ newPair,
+          hasRepeatedPair || foundRepeatedPair,
+          hasWindowedLetter || foundWindowedLetter
+        )
+    }
+  }
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    inputLines(15)(5)
+      .map(_.toCharArray.toList)
+      .count(isNice2(_))
+      .pipe(println)
+  }
+}

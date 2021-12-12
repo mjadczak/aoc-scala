@@ -44,28 +44,42 @@ def parseGraph: Map[Cave, Set[Cave]] = {
     }
 }
 
-case class Path(path: List[Cave], visitedSmallCaves: Set[Cave]) {
+trait Path[P <: Path[P]] {
+  def finalPath: Vector[Cave]
+  def currentCave: Cave
+  def canVisit(cave: Cave): Boolean
+  def isFinished: Boolean
+  def withNext(cave: Cave): P
+}
+
+case class Path1(path: List[Cave], visitedSmallCaves: Set[Cave])
+    extends Path[Path1] {
   def finalPath: Vector[Cave] = path.reverseIterator.toVector
   def currentCave: Cave = path.head
+  def canVisit(cave: Cave): Boolean =
+    cave != Cave.Start && !visitedSmallCaves.contains(cave)
   def isFinished: Boolean = currentCave == Cave.End
-  def withNext(cave: Cave): Path = cave match {
+  def withNext(cave: Cave): Path1 = cave match {
     case c @ Cave.Small(_) =>
       copy(path = c :: path, visitedSmallCaves = visitedSmallCaves + c)
     case c => copy(path = c :: path)
   }
 }
 
+object Path1 {
+  def initial: Path1 = Path1(List(Cave.Start), Set.empty)
+}
+
 @tailrec
-def calculatePaths(
+def calculatePaths[P <: Path[P]](
     graph: Map[Cave, Set[Cave]],
-    pathsInProgress: Queue[Path] = Queue(Path(List(Cave.Start), Set.empty)),
-    finishedPaths: Set[Path] = Set.empty
-): Set[Path] = pathsInProgress.dequeueOption match {
+    pathsInProgress: Queue[P],
+    finishedPaths: Set[P] = Set.empty[P]
+): Set[P] = pathsInProgress.dequeueOption match {
   case None => finishedPaths
   case Some((path, queueRest)) =>
     val (finished, ongoing) = graph(path.currentCave)
-      .excl(Cave.Start)
-      .filterNot(path.visitedSmallCaves)
+      .filter(path.canVisit)
       .map(path.withNext)
       .partition(_.isFinished)
 
@@ -78,6 +92,39 @@ def calculatePaths(
 
 object Part1 {
   def main(args: Array[String]): Unit = {
-    println(calculatePaths(parseGraph).size)
+    println(calculatePaths(parseGraph, Queue(Path1.initial)).size)
+  }
+}
+
+case class Path2(
+    path: List[Cave],
+    visitedSmallCaves: Set[Cave],
+    extraSmallCave: Option[Cave]
+) extends Path[Path2] {
+  def finalPath: Vector[Cave] = path.reverseIterator.toVector
+  def currentCave: Cave = path.head
+  def canVisit(cave: Cave): Boolean =
+    cave != Cave.Start &&
+      (!visitedSmallCaves.contains(cave) || extraSmallCave.isEmpty)
+  def isFinished: Boolean = currentCave == Cave.End
+  def withNext(cave: Cave): Path2 = cave match {
+    case c @ Cave.Small(_) if !visitedSmallCaves.contains(c) =>
+      copy(path = c :: path, visitedSmallCaves = visitedSmallCaves + c)
+    case c @ Cave.Small(_)
+        if visitedSmallCaves.contains(c) && extraSmallCave.isEmpty =>
+      copy(path = c :: path, extraSmallCave = Some(c))
+    case c @ Cave.Small(_) =>
+      throw new IllegalStateException(s"Cannot visit $c")
+    case c => copy(path = c :: path)
+  }
+}
+
+object Path2 {
+  def initial: Path2 = Path2(List(Cave.Start), Set.empty, None)
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    println(calculatePaths(parseGraph, Queue(Path2.initial)).size)
   }
 }

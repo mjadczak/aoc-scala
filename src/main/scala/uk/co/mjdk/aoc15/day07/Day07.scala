@@ -58,13 +58,13 @@ object Gate {
 }
 
 // Returns lookup of ID to gate, and also a map of ID -> downstream deps)
-def parseGates: (Map[String, Gate], Map[String, Set[String]]) = {
+def parseGates: Map[String, Gate] = {
   // Would use a parsing lib at this point, but all the good ones have not been ported to Scala 3 yet :(
   val IdPat = """(\d+|[a-z]+) -> ([a-z]+)""".r
   val NotPat = """NOT (\d+|[a-z]+) -> ([a-z]+)""".r
   val BinaryPat = """(\d+|[a-z]+) ([A-Z]+) (\d+|[a-z]+) -> ([a-z]+)""".r
 
-  val gates = inputLines(15)(7).map {
+  inputLines(15)(7).map {
     case NotPat(src, target) =>
       target -> Gate.Not(Operand.from(src))
     case IdPat(src, target) =>
@@ -80,18 +80,18 @@ def parseGates: (Map[String, Gate], Map[String, Set[String]]) = {
 
   }.toMap
 
-  val deps =
-    gates.iterator.foldLeft(Map.empty[String, Set[String]]) {
-      case (map, id -> gate) =>
-        gate.dependencies.foldLeft(map) { case (map, depId) =>
-          map.updatedWith(depId) {
-            case None      => Some(Set(id))
-            case Some(set) => Some(set + id)
-          }
-        }
-    }
+}
 
-  (gates, deps)
+def calculateDeps(gates: Map[String, Gate]): Map[String, Set[String]] = {
+  gates.iterator.foldLeft(Map.empty[String, Set[String]]) {
+    case (map, id -> gate) =>
+      gate.dependencies.foldLeft(map) { case (map, depId) =>
+        map.updatedWith(depId) {
+          case None      => Some(Set(id))
+          case Some(set) => Some(set + id)
+        }
+      }
+  }
 }
 
 def emulate(
@@ -129,8 +129,22 @@ def emulate(
 
 object Part1 {
   def main(args: Array[String]): Unit = {
-    val (gates, deps) = parseGates
+    val gates = parseGates
+    val deps = calculateDeps(gates)
     val result = emulate(gates, deps)
     println(result("a"))
+  }
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val gates1 = parseGates
+    val deps1 = calculateDeps(gates1)
+    val result1 = emulate(gates1, deps1)
+    val a = result1("a")
+    val gates2 = gates1 + ("b" -> Gate.Id(Operand.Const(a)))
+    val deps2 = calculateDeps(gates2)
+    val result2 = emulate(gates2, deps2)
+    println(result2("a"))
   }
 }

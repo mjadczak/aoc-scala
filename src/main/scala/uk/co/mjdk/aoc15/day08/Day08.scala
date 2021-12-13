@@ -27,11 +27,40 @@ def parseString(
     parseString(rest, output + c)
 }
 
+def encodeString(input: String): String = encodeString(input.toCharArray.toList)
+
+@tailrec
+def encodeString(
+    input: List[Char],
+    output: String = ""
+): String = input match {
+  case Nil =>
+    output + '"'
+  case _ if output.isEmpty =>
+    encodeString(input, output + '"')
+  case '"' :: rest =>
+    encodeString(rest, output + """\"""")
+  case '\\' :: rest =>
+    encodeString(rest, output + """\\""")
+  case c :: rest =>
+    encodeString(rest, output + c)
+}
+
 object Part1 {
   def main(args: Array[String]): Unit = {
     val total = inputLines(15)(8).map { line =>
       val parsed = parseString(line)
       line.length - parsed.length
+    }.sum
+    println(total)
+  }
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val total = inputLines(15)(8).map { line =>
+      val encoded = encodeString(line)
+      encoded.length - line.length
     }.sum
     println(total)
   }

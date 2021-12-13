@@ -1,7 +1,8 @@
-package uk.co.mjdk.aoc15
+package uk.co.mjdk.aoc15.day06
 
 import uk.co.mjdk.aoc.inputLines
-import scala.util.chaining._
+
+import scala.util.chaining.*
 
 case class Pos(x: Int, y: Int) {
   def to(other: Pos): Iterator[Pos] = {

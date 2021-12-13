@@ -21,9 +21,9 @@ case class Fold(axis: Axis, value: Int) {
     axis match {
       // Crying out for lenses
       case Axis.X =>
-        pos.copy(x = (pos.x - value).abs)
+        pos.copy(x = value - (pos.x - value).abs)
       case Axis.Y =>
-        pos.copy(y = (pos.y - value).abs)
+        pos.copy(y = value - (pos.y - value).abs)
     }
   }
 }
@@ -53,5 +53,45 @@ object Part1 {
     val (positions, folds) = parseInput
     val folded = positions.map(folds.head.apply)
     print(folded.size)
+  }
+}
+
+def prettyGrid(grid: Set[Pos], fold: Option[Fold] = None): String = {
+  // not the most efficient way of going about things, but expedient
+  val minX = grid.minBy(_.x).x
+  val minY = grid.minBy(_.y).y
+  val maxX = grid.maxBy(_.x).x
+  val maxY = grid.maxBy(_.y).y
+
+  val regularOutput: Pos => String = pos => if (grid(pos)) "#" else " "
+  val output: Pos => String = fold match {
+    case None => regularOutput
+    case Some(Fold(Axis.X, foldX)) =>
+      pos => if (pos.x == foldX) "|" else regularOutput(pos)
+    case Some(Fold(Axis.Y, foldY)) =>
+      pos => if (pos.y == foldY) "-" else regularOutput(pos)
+  }
+
+  s"${grid.size} ON, x=$minX..$maxX, y=$minY..$maxY\n" +
+    (minY to maxY).iterator
+      .map { y =>
+        (minX to maxX).iterator.map { x =>
+          output(Pos(x, y))
+        }.mkString
+      }
+      .mkString("\n")
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val (positions, folds) = parseInput
+    val folded = folds.foldLeft(positions) { (poss, fold) =>
+//      println(prettyGrid(poss, Some(fold)))
+//      println()
+//      println()
+
+      poss.map(fold.apply)
+    }
+    println(prettyGrid(folded))
   }
 }

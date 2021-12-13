@@ -46,25 +46,51 @@ object Instruction {
 // Normally I would use immutable data structures for these, but in this case it's ungodly slow - let's give in
 // and mutate some arrays
 
+def updateWithInstruction[T](grid: Array[Array[T]])(
+    parseInstruction: InstructionType => T => T
+)(instruction: Instruction): Unit = {
+  val update = parseInstruction(instruction.typ)
+  instruction.start
+    .to(instruction.end)
+    .foreach(pos => grid(pos.x)(pos.y) = update(grid(pos.x)(pos.y)))
+}
+
 object Part1 {
   def main(args: Array[String]): Unit = {
     val grid: Array[Array[Boolean]] = Array.fill(1000)(Array.fill(1000)(false))
 
+    val update = updateWithInstruction(grid) {
+      case InstructionType.TurnOn  => _ => true
+      case InstructionType.TurnOff => _ => false
+      case InstructionType.Toggle  => t => !t
+    }
+
     inputLines(15)(6)
       .map(Instruction.parse)
-      .foreach { inst =>
-        val update: Boolean => Boolean = inst.typ match {
-          case InstructionType.TurnOn  => _ => true
-          case InstructionType.TurnOff => _ => false
-          case InstructionType.Toggle  => t => !t
-        }
-        inst.start
-          .to(inst.end)
-          .foreach(pos => grid(pos.x)(pos.y) = update(grid(pos.x)(pos.y)))
-      }
+      .foreach { update }
 
     val lightsOn = grid.iterator.flatMap(_.iterator).count(identity)
 
     println(lightsOn)
+  }
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val grid: Array[Array[Int]] = Array.fill(1000)(Array.fill(1000)(0))
+
+    val update = updateWithInstruction(grid) {
+      case InstructionType.TurnOn  => x => x + 1
+      case InstructionType.TurnOff => x => 0.max(x - 1)
+      case InstructionType.Toggle  => x => x + 2
+    }
+
+    inputLines(15)(6)
+      .map(Instruction.parse)
+      .foreach { update }
+
+    val totalBrightness = grid.iterator.flatMap(_.iterator).sum
+
+    println(totalBrightness)
   }
 }

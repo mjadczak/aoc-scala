@@ -45,7 +45,7 @@ def parseInput: Graph = {
     }
 }
 
-object Part1 {
+object Day09 {
   def main(args: Array[String]): Unit = {
     val graph = parseInput
     val initialPaths =
@@ -82,6 +82,7 @@ object Part1 {
     }
 
     val allPaths = process(initialPaths)
-    println(allPaths.minBy(_.distance).distance)
+    println(s"MIN = ${allPaths.minBy(_.distance).distance}")
+    println(s"MAX = ${allPaths.maxBy(_.distance).distance}")
   }
 }

@@ -58,12 +58,23 @@ def validate(
 
 }
 
-object Day11 {
+object Part1 {
   def main(args: Array[String]): Unit = {
     val res = Iterator
       .iterate(Input.toCharArray.toVector)(increment(_))
       .find(validate(_))
       .get
+    println(res.mkString)
+  }
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val res = Iterator
+      .iterate(Input.toCharArray.toVector)(increment(_))
+      .filter(validate(_))
+      .drop(1)
+      .next()
     println(res.mkString)
   }
 }

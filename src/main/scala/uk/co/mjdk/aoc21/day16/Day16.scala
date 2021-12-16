@@ -8,36 +8,93 @@ import scala.util.chaining._
 // Yes, it would be better to use byte arrays instead of Vector[Boolean]s, but the data size here is tiny so this
 // is easier
 
-enum PacketType(val id: Int) {
-  case Literal extends PacketType(4)
-  case Other extends PacketType(-1)
+sealed trait PacketType {
+  def id: Int
 }
 
-sealed trait Packet(typ: PacketType) {
+object PacketType {
+  case object Literal extends PacketType {
+    override val id: Int = 4
+  }
+  sealed trait Operator(override val id: Int) extends PacketType {
+    def applyLogic(inputs: Vector[Long]): Long
+  }
+  object Operator {
+    case object Sum extends Operator(0) {
+      override def applyLogic(inputs: Vector[Long]): Long = inputs.sum
+    }
+    case object Product extends Operator(1) {
+      override def applyLogic(inputs: Vector[Long]): Long = inputs.product
+    }
+    case object Minimum extends Operator(2) {
+      override def applyLogic(inputs: Vector[Long]): Long = inputs.min
+    }
+    case object Maximum extends Operator(3) {
+      override def applyLogic(inputs: Vector[Long]): Long = inputs.max
+    }
+    case object GreaterThan extends Operator(5) {
+      override def applyLogic(inputs: Vector[Long]): Long = {
+        require(inputs.length == 2)
+        if (inputs(0) > inputs(1)) 1 else 0
+      }
+    }
+    case object LessThan extends Operator(6) {
+      override def applyLogic(inputs: Vector[Long]): Long = {
+        require(inputs.length == 2)
+        if (inputs(0) < inputs(1)) 1 else 0
+      }
+    }
+    case object Equal extends Operator(7) {
+      override def applyLogic(inputs: Vector[Long]): Long = {
+        require(inputs.length == 2)
+        if (inputs(0) == inputs(1)) 1 else 0
+      }
+    }
+  }
+
+  def forId(id: Int): PacketType = id match {
+    case 0 => Operator.Sum
+    case 1 => Operator.Product
+    case 2 => Operator.Minimum
+    case 3 => Operator.Maximum
+    case 4 => Literal
+    case 5 => Operator.GreaterThan
+    case 6 => Operator.LessThan
+    case 7 => Operator.Equal
+    case n => throw new IllegalArgumentException(s"Invalid type ID $id")
+  }
+}
+
+sealed trait Packet {
   def version: Int
+  def typ: PacketType
+  def value: Long
 }
 
 object Packet {
-  case class Literal(version: Int, value: Long)
-      extends Packet(PacketType.Literal)
-  case class Operator(version: Int, children: Vector[Packet])
-      extends Packet(PacketType.Other)
+  case class Literal(version: Int, value: Long) extends Packet {
+    val typ: PacketType = PacketType.Literal
+  }
+  case class Operator(
+      version: Int,
+      typ: PacketType.Operator,
+      children: Vector[Packet]
+  ) extends Packet {
+    override def value: Long = typ.applyLogic(children.map(_.value))
+  }
 
   private class PacketParser(reader: BitstreamReader) {
     def parse(): Packet = {
       val version = reader
         .readBits(3)
-        .tap(s => print(s"VERSION: ${s.toBinaryStr}"))
         .toInt
-        .tap(s => println(s" = $s"))
       val typId = reader
         .readBits(3)
-        .tap(s => print(s"TYP: ${s.toBinaryStr}"))
         .toInt
-        .tap(s => println(s" = $s"))
-      typId match {
-        case PacketType.Literal.id => parseLiteral(version)
-        case _                     => parseOperator(version)
+      val packetType = PacketType.forId(typId)
+      packetType match {
+        case PacketType.Literal     => parseLiteral(version)
+        case t: PacketType.Operator => parseOperator(version, t)
       }
     }
 
@@ -55,23 +112,21 @@ object Packet {
         }
       }
 
-      val value = parseValueBits()
-        .tap(s => print(s"VALUE: ${s.toBinaryStr}"))
-        .toLong
-        .tap(s => println(s" = $s"))
+      val value = parseValueBits().toLong
       Packet.Literal(version, value)
     }
 
-    def parseOperator(version: Int): Packet.Operator = {
+    def parseOperator(
+        version: Int,
+        packetType: PacketType.Operator
+    ): Packet.Operator = {
       val lengthTyp = reader.readBit()
       lengthTyp match {
         case false =>
           // read packets until we've read N bits
           val bitLength = reader
             .readBits(15)
-            .tap(s => print(s"BITLEN: ${s.toBinaryStr}"))
             .toInt
-            .tap(s => println(s" = $s"))
           val startOffset = reader.offset
           val endOffset = startOffset + bitLength
           @tailrec
@@ -88,16 +143,15 @@ object Packet {
               newResult
             }
           }
-          Packet.Operator(version, readPackets())
+          Packet.Operator(version, packetType, readPackets())
         case true =>
           // read N packets
           val numPackets = reader
             .readBits(11)
-            .tap(s => print(s"PAKLEN: ${s.toBinaryStr}"))
             .toInt
-            .tap(s => println(s" = $s"))
           Packet.Operator(
             version,
+            packetType,
             0.until(numPackets).iterator.map(_ => parse()).toVector
           )
       }
@@ -107,7 +161,6 @@ object Packet {
   def parse(input: Vector[Byte]): Packet = {
     val reader = new BitstreamReader(input)
     val pak = new PacketParser(reader).parse()
-    println(s"READER OFFSET: ${reader.offset}, LEN: ${reader.length}")
     pak
   }
 
@@ -177,7 +230,7 @@ def parseInput: Vector[Byte] =
     .map(s => Integer.parseInt(s, 16).toByte)
     .toVector
 
-object Blah {
+object Part1 {
   def main(args: Array[String]): Unit = {
     val input = parseInput
     val packet = Packet.parse(input)
@@ -185,11 +238,20 @@ object Blah {
     def addVersions(packet: Packet): Int = {
       packet match {
         case Packet.Literal(version, _) => version
-        case Packet.Operator(version, children) =>
+        case Packet.Operator(version, _, children) =>
           version + children.iterator.map(addVersions).sum
       }
     }
 
     println(addVersions(packet))
+  }
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val input = parseInput
+    val packet = Packet.parse(input)
+    println(packet)
+    println(packet.value)
   }
 }

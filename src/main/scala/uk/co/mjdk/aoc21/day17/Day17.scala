@@ -27,3 +27,55 @@ object Part1 {
     println(ySpeed * (ySpeed + 1) / 2)
   }
 }
+
+// X upper bound: xMax +1 lower bound: 0 (especially for my special case; the problem specifies drag to also work with
+// negative x velocities, which would only make sense if x could also be negative)
+// Y upper bound - as before, -ymin. Lower bound - ymin - 1
+
+case class Vector(x: Int, y: Int) {
+  def +(other: Vector): Vector = copy(x = x + other.x, y = y + other.y)
+}
+
+case class State(position: Vector, velocity: Vector) {
+  require(velocity.x >= 0)
+  def isInTarget(area: TargetArea): Boolean =
+    position.x >= area.xMin && position.x <= area.xMax && position.y >= area.yMin && position.y <= area.yMax
+
+  def isLost(area: TargetArea): Boolean =
+    // past target, or 0 velocity and not on target
+    !isInTarget(area) && (
+      velocity.x == 0 && position.x < area.xMin ||
+        position.x > area.xMax ||
+        position.y < area.yMin
+    )
+
+  def advance: State = {
+    val newVelocity = Vector(0.max(velocity.x - 1), velocity.y - 1)
+    State(position + velocity, newVelocity)
+  }
+}
+
+object Part2 {
+  def doesHitTarget(initialVelocity: Vector, targetArea: TargetArea): Boolean =
+    Iterator
+      .iterate(State(Vector(0, 0), initialVelocity))(_.advance)
+      .takeWhile(!_.isLost(targetArea))
+      .exists(_.isInTarget(targetArea))
+
+  def main(args: Array[String]): Unit = {
+    val target = parseInput
+    val goodVels = 0
+      .to(target.xMax)
+      .iterator
+      .flatMap(xVel =>
+        (target.yMin - 1)
+          .to(-target.yMin)
+          .iterator
+          .map(yVel => Vector(xVel, yVel))
+      )
+      .filter(initialVel => doesHitTarget(initialVel, target))
+      .toSet
+
+    println(goodVels.size)
+  }
+}

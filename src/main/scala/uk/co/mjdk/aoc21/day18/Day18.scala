@@ -187,3 +187,16 @@ object Part1 {
     println(result.magnitude)
   }
 }
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val numbers = inputLines(21)(18).map(SnailfishNum.parse).toVector
+    val maxMagnitude = numbers.iterator
+      .flatMap(n1 => numbers.iterator.map(n2 => (n1, n2)))
+      .filterNot((l, r) => l == r)
+      .map(_ + _)
+      .map(_.magnitude)
+      .max
+    println(maxMagnitude)
+  }
+}

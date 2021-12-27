@@ -105,3 +105,11 @@ object Part1 {
     println(image.transform(algo).transform(algo).pixels.size)
   }
 }
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val (algo, image) = parseInput
+    val transformed = Iterator.iterate(image)(_.transform(algo)).drop(50).next()
+    println(transformed.pixels.size)
+  }
+}

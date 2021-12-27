@@ -102,9 +102,8 @@ def findLowestCost(grid: VirtualGrid): Int = {
         val candidateDistance = curMinDistance + grid(adjacentNode)
         if (candidateDistance < tentativeDistance) {
           distances.put(adjacentNode, candidateDistance)
-          pq.remove(
-            (adjacentNode, tentativeDistance)
-          ) // This is not great - a linear scan
+          // we don't actually need to remove the old node version, and with Java's PQ by not doing so we avoid
+          // a linear scan
           pq.add((adjacentNode, candidateDistance))
         }
       }

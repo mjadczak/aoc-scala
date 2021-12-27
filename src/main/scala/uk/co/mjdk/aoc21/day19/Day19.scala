@@ -143,3 +143,17 @@ object Part1 {
     println(numBeacons)
   }
 }
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val scanners = parseScanners
+    val scannerPositions = transformAll(scanners).map(_.origin)
+
+    val allDistances = for {
+      s1 <- scannerPositions
+      s2 <- scannerPositions
+    } yield (s1 - s2).magnitudeManhattan
+
+    println(allDistances.max)
+  }
+}

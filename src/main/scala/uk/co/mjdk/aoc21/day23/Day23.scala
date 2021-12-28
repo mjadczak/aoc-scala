@@ -39,6 +39,35 @@ case class State private (
     // for simplicity we represent all squares, even those never occupied
     hallway: Vector[Option[Amphipod]]
 ) {
+  def withExtraPods: State = {
+    if (hallway.flatten.nonEmpty) {
+      throw new IllegalStateException("Hallway not empty")
+    }
+    if (!sideRooms.map(_.flatten).forall(_.length == 2)) {
+      throw new IllegalArgumentException("Side rooms not length 2")
+    }
+    val rows = sideRooms.map(_.flatten).transpose
+    val additionalRows = {
+      import Amphipod._
+      Vector(
+        Vector(
+          Desert,
+          Copper,
+          Bronze,
+          Amber
+        ),
+        Vector(
+          Desert,
+          Bronze,
+          Amber,
+          Copper
+        )
+      )
+    }
+    val newRows = rows(0) +: additionalRows :+ rows(1)
+    copy(sideRooms = newRows.transpose.map(_.map(Some(_))))
+  }
+
   val sideRoomDepth: Int = sideRooms.head.length
   def isComplete: Boolean =
     sideRooms
@@ -103,17 +132,20 @@ case class State private (
             .map(movedTo)
 
           // Check if we can go straight to our room
-          val targetRoom = sideRooms(pod.roomIdx)
+          val targetRoomIdx = pod.roomIdx
+          val targetRoom = sideRooms(targetRoomIdx)
           val toRoomStep =
             if (
               // we're already there, but we need to move out to let someone else out
-              pod.roomIdx == roomIdx ||
+              targetRoomIdx == roomIdx ||
               // there's no free space in our room
-              !targetRoom.exists(_.isEmpty)
+              !targetRoom.exists(_.isEmpty) ||
+              // there are amphipods there which don't belong
+              targetRoom.flatten.exists(_.roomIdx != targetRoomIdx)
             ) {
               None
             } else {
-              val targetSquare = hallwaySquareForRoom(pod.roomIdx)
+              val targetSquare = hallwaySquareForRoom(targetRoomIdx)
               if (
                 hallwaySquare
                   .to(targetSquare, (targetSquare - hallwaySquare).sign)
@@ -170,7 +202,9 @@ case class State private (
             .map(hallway)
             .forall(_.isEmpty) &&
           // is there room in the target room?
-          targetRoom.exists(_.isEmpty)
+          targetRoom.exists(_.isEmpty) &&
+          // are there no amphipods there that don't belong?
+          !targetRoom.flatten.exists(_.roomIdx != targetRoomIdx)
         ) {
           val numStepsInHallway = (hallwaySquare - targetSquare).abs
           val numEmpties = targetRoom.iterator.takeWhile(_.isEmpty).length
@@ -238,6 +272,7 @@ def findLowestCost(initialState: State): Int = {
     )
   pq.add((initialState, 0))
   costs.put(initialState, 0)
+  // val prev = new util.HashMap[State, State]()
   val visitedStates = new util.HashSet[State]()
   var finalState: Option[State] = None
   while (finalState.isEmpty) {
@@ -259,16 +294,33 @@ def findLowestCost(initialState: State): Int = {
             costs.put(nextState, candidateCost)
             // no need to remove the old version - see Day 15
             pq.add((nextState, candidateCost))
+            // prev.put(nextState, curState)
           }
         }
       visitedStates.add(curState)
     }
   }
+//  // debug: show final path
+//  val finalPath = (Iterator
+//    .iterate(finalState.get)(prev.get)
+//    .takeWhile(_ != initialState) ++ Iterator(initialState)).toVector.reverse
+//
+//  finalPath.foreach { s =>
+//    println(s)
+//    println()
+//  }
+
   costs.get(finalState.get)
 }
 
 object Part1 {
   def main(args: Array[String]): Unit = {
     println(findLowestCost(State.fromInput))
+  }
+}
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    println(findLowestCost(State.fromInput.withExtraPods))
   }
 }

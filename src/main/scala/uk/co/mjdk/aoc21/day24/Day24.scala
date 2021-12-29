@@ -273,3 +273,11 @@ object Part1 {
     println(chosen)
   }
 }
+
+object Part2 {
+  def main(args: Array[String]): Unit = {
+    val program = inputLines(21)(24).map(Instruction.parse).toVector
+    val chosen = findValidNumber(DigitSort.Ascending, program)
+    println(chosen)
+  }
+}
